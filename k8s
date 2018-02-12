@@ -1,0 +1,161 @@
+# Purpose: use this script to kubectl delete/get/log/describe pods more easily
+# Author: zhaohsun@cisco.com
+
+#!/bin/bash
+
+readonly PROGNAME=$(basename $0)
+readonly PROGDIR=$(readlink -m $(dirname $0))
+readonly ARGS="$@"
+
+cmdline() {
+    local arg=
+    for arg
+    do
+        local delim=""
+        case "$arg" in
+            --delete)               args="${args}-d ";;
+            --log)                  args="${args}-l ";;
+            --get)                  args="${args}-g ";;
+            --describe)                  args="${args}-s ";;
+            *) [[ "${arg:0:1}" == "-" ]] || delim="\""
+                args="${args}${delim}${arg}${delim} ";;
+        esac
+    done
+ eval set -- $args
+
+ #echo $args
+
+while getopts "d:l:s:h:g" OPTION
+    do
+         case $OPTION in
+         d)
+             DELETE_PODS+=("$OPTARG")
+             ;;
+         l)
+             readonly LOG_POD=$OPTARG
+             ;;
+         s)
+             readonly DESCRIBE_POD=$OPTARG
+             ;;
+         h)
+             usage
+             exit 0
+             ;;
+         g)
+             readonly OPERATION="get_pods"
+             ;;
+        \?)
+             echo "Invalid option: -$OPTARG"
+             usage
+             exit 0
+             ;;
+
+        esac
+    done
+    shift $((OPTIND -1))
+}
+
+usage() {
+    cat <<- EOF
+
+  usage: $PROGNAME [-h]
+  usage: $PROGNAME OPTIONS
+
+  This script will help to use kubectl get/delete/log/describe pods more easily.
+  It uses grep to delete/log/describe pod with your simple input.
+
+  -h --help                        show this help
+
+  OPTIONS:
+     -d --delete                 delete the pod, -d all, means delete all ccmts and vswitch pods
+     -l --log                    show the pod log
+     -g --get                    get all pods
+     -s --describe               describe the pod
+
+
+  Examples:
+     $PROGNAME -g
+     $PROGNAME -d vswitch -d ptp -d dhcp
+     $PROGNAME -d all
+     $PROGNAME -l ptp
+     $PROGNAME -s macl3vpp
+EOF
+}
+
+
+main() {
+  local rc=0
+  cmdline ${ARGS}
+
+  #echo "DELETE_PODS="${DELETE_PODS[@]}
+  #echo "LOG_POD="$LOG_POD
+  #echo "DESCRIBE_POD="$DESCRIBE_POD
+
+  # get pods
+  if [ -n "$OPERATION" ]
+    then
+    if [ $OPERATION == "get_pods" ]
+        then
+        kubectl get pods
+        #GET_OUTPUT=$(kubectl get pods)
+        #echo $GET_OUTPUT
+        rc=$(($rc+$?))
+    fi
+  fi
+
+  # delete
+  if [ -n "$DELETE_PODS" ];then
+      if [ $DELETE_PODS == "all" ];then
+        echo "Delete all of ccmts pods!"
+        ALL_OUTPUT=$(kubectl get pods | grep "\(cmts\)\|\(vswitch\)" | tr -s ' ' | cut -d ' ' -f 1 )
+        echo $ALL_OUTPUT
+        ALL_POD_NAME=$(echo $ALL_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
+        echo $ALL_POD_NAME
+        kubectl delete pod  $ALL_POD_NAME
+      else
+          for POD in ${DELETE_PODS[@]}
+              do
+              # kubectl get pods | grep "\(dhcp\)\|\(ptp\)"
+              DELETE_OUTPUT=$(kubectl get pods | grep $POD )
+              #echo $DELETE_OUTPUT
+              DELETE_POD_NAME=$(echo $DELETE_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
+              echo $DELETE_POD_NAME
+              kubectl delete pod $DELETE_POD_NAME
+              if [ $? -ne 0 ]
+              then
+                echo "Not delete pod"
+              fi
+          done
+      fi
+  fi
+
+  # log
+  if [ -n "$LOG_POD" ]
+      then
+      LOG_GREP_OUTPUT=$(kubectl get pods | grep $LOG_POD )
+      echo $LOG_GREP_OUTPUT
+      LOG_POD_NAME=$(echo $LOG_GREP_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
+      echo $LOG_POD_NAME
+      kubectl log -f  $LOG_POD_NAME
+      #echo $LOG_OUTPUT
+  fi
+
+  # describe
+  if [ -n "$DESCRIBE_POD" ]
+      then
+      DESCRIBE_GREP_OUTPUT=$(kubectl get pods | grep $DESCRIBE_POD )
+      DESCRIBE_POD_NAME=$(echo $DESCRIBE_GREP_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
+      echo $DESCRIBE_POD_NAME
+      kubectl describe pod $DESCRIBE_POD_NAME
+      #DESCRIBE_OUTPUT=$(kubectl describe pod $DESCRIBE_POD_NAME)
+      #echo $DESCRIBE_OUTPUT
+  fi
+
+  rc=$(($rc+$?))
+  result=$?
+  return $result
+}
+
+# main function input
+main
+
