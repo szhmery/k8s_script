@@ -45,7 +45,7 @@ while getopts "d:l:s:h:g" OPTION
              readonly OPERATION="get_pods"
              ;;
         \?)
-             echo "Invalid option: -$OPTARG"
+             echo "Invalid option: $OPTARG"
              usage
              exit 0
              ;;
@@ -74,11 +74,11 @@ usage() {
 
 
   Examples:
-     $PROGNAME -g
-     $PROGNAME -d vswitch -d ptp -d dhcp
-     $PROGNAME -d all
-     $PROGNAME -l ptp
-     $PROGNAME -s macl3vpp
+     ./$PROGNAME -g
+     ./$PROGNAME -d vswitch -d ptp -d dhcp
+     ./$PROGNAME -d all
+     ./$PROGNAME -l ptp
+     ./$PROGNAME -s macl3vpp
 EOF
 }
 
