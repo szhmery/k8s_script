@@ -98,7 +98,7 @@ main() {
   #echo "DELETE_PODS="${DELETE_PODS[@]}
   #echo "LOG_POD="$LOG_POD
   #echo "DESCRIBE_POD="$DESCRIBE_POD
-  echo "EXEC_POD="$EXEC_POD
+  #echo "EXEC_POD="$EXEC_POD
   # get pods
   if [ -n "$OPERATION" ]
     then
