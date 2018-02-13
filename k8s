@@ -173,18 +173,18 @@ main() {
          then
             echo "kubectl exec -it $EXEC_POD_NAME sh"
             kubectl exec -it $EXEC_POD_NAME sh
-            vppctl -s localhost:5002
+            #vppctl -s localhost:5002
       elif [[ $EXEC_POD_NAME =~ "vswitch" ]]
          then
             echo "kubectl exec -it $EXEC_POD_NAME bash"
             kubectl exec -it $EXEC_POD_NAME bash
-            vppctl -s localhost:5002
+            #vppctl -s localhost:5002
       elif [[ $EXEC_POD_NAME =~ "etcd-0" ]]
          then
             echo "kubectl exec -it $EXEC_POD_NAME bash"
             echo "ETCDCTL_API=3"
             kubectl exec -it $EXEC_POD_NAME bash
-            export ETCDCTL_API=3
+            #export ETCDCTL_API=3
 
         else
             echo "kubectl exec -it $EXEC_POD_NAME bash"
