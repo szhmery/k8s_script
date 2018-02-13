@@ -16,7 +16,8 @@ cmdline() {
             --delete)               args="${args}-d ";;
             --log)                  args="${args}-l ";;
             --get)                  args="${args}-g ";;
-            --describe)                  args="${args}-s ";;
+            --describe)             args="${args}-s ";;
+            --exec)                 args="${args}-e ";;
             *) [[ "${arg:0:1}" == "-" ]] || delim="\""
                 args="${args}${delim}${arg}${delim} ";;
         esac
@@ -25,7 +26,7 @@ cmdline() {
 
  #echo $args
 
-while getopts "d:l:s:h:g" OPTION
+while getopts "d:l:s:e:h:g" OPTION
     do
          case $OPTION in
          d)
@@ -37,6 +38,9 @@ while getopts "d:l:s:h:g" OPTION
          s)
              readonly DESCRIBE_POD=$OPTARG
              ;;
+        e)
+             readonly EXEC_POD=$OPTARG
+             ;;
          h)
              usage
              exit 0
@@ -44,6 +48,7 @@ while getopts "d:l:s:h:g" OPTION
          g)
              readonly OPERATION="get_pods"
              ;;
+
         \?)
              echo "Invalid option: $OPTARG"
              usage
@@ -71,6 +76,7 @@ usage() {
      -l --log                    show the pod log
      -g --get                    get all pods
      -s --describe               describe the pod
+     -e --exec                   login the pod
 
 
   Examples:
@@ -79,6 +85,8 @@ usage() {
      ./$PROGNAME -d all
      ./$PROGNAME -l ptp
      ./$PROGNAME -s macl3vpp
+     ./$PROGNAME -e vswitch
+     ./$PROGNAME -e etct-0
 EOF
 }
 
@@ -90,7 +98,7 @@ main() {
   #echo "DELETE_PODS="${DELETE_PODS[@]}
   #echo "LOG_POD="$LOG_POD
   #echo "DESCRIBE_POD="$DESCRIBE_POD
-
+  echo "EXEC_POD="$EXEC_POD
   # get pods
   if [ -n "$OPERATION" ]
     then
@@ -149,6 +157,39 @@ main() {
       kubectl describe pod $DESCRIBE_POD_NAME
       #DESCRIBE_OUTPUT=$(kubectl describe pod $DESCRIBE_POD_NAME)
       #echo $DESCRIBE_OUTPUT
+  fi
+
+  # exec
+  if [ -n "$EXEC_POD" ]
+    then
+      EXEC_GREP_OUTPUT=$(kubectl get pods | grep $EXEC_POD )
+      EXEC_POD_NAME=$(echo $EXEC_GREP_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
+      echo $EXEC_POD_NAME
+      if [[ $EXEC_POD_NAME =~ "dhcp" ]]
+        then
+            echo "kubectl exec -it $EXEC_POD_NAME sh"
+            kubectl exec -it $EXEC_POD_NAME sh
+      elif [[ $EXEC_POD_NAME =~ "ptp" ]]
+         then
+            echo "kubectl exec -it $EXEC_POD_NAME sh"
+            kubectl exec -it $EXEC_POD_NAME sh
+            vppctl -s localhost:5002
+      elif [[ $EXEC_POD_NAME =~ "vswitch" ]]
+         then
+            echo "kubectl exec -it $EXEC_POD_NAME bash"
+            kubectl exec -it $EXEC_POD_NAME bash
+            vppctl -s localhost:5002
+      elif [[ $EXEC_POD_NAME =~ "etcd-0" ]]
+         then
+            echo "kubectl exec -it $EXEC_POD_NAME bash"
+            echo "ETCDCTL_API=3"
+            kubectl exec -it $EXEC_POD_NAME bash
+            export ETCDCTL_API=3
+
+        else
+            echo "kubectl exec -it $EXEC_POD_NAME bash"
+            kubectl exec -it $EXEC_POD_NAME bash
+        fi
   fi
 
   rc=$(($rc+$?))
