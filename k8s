@@ -165,31 +165,24 @@ main() {
       EXEC_GREP_OUTPUT=$(kubectl get pods | grep $EXEC_POD )
       EXEC_POD_NAME=$(echo $EXEC_GREP_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
       echo $EXEC_POD_NAME
-      if [[ $EXEC_POD_NAME =~ "dhcp" ]]
-        then
-            echo "kubectl exec -it $EXEC_POD_NAME sh"
-            kubectl exec -it $EXEC_POD_NAME sh
-      elif [[ $EXEC_POD_NAME =~ "ptp" ]]
-         then
-            echo "kubectl exec -it $EXEC_POD_NAME sh"
-            kubectl exec -it $EXEC_POD_NAME sh
-            #vppctl -s localhost:5002
-      elif [[ $EXEC_POD_NAME =~ "vswitch" ]]
+      if [[ $EXEC_POD_NAME =~ "vswitch" ]]
          then
             echo "kubectl exec -it $EXEC_POD_NAME bash"
             kubectl exec -it $EXEC_POD_NAME bash
             #vppctl -s localhost:5002
       elif [[ $EXEC_POD_NAME =~ "etcd-0" ]]
          then
-            echo "kubectl exec -it $EXEC_POD_NAME bash"
-            echo "ETCDCTL_API=3"
+            echo "kubectl exec -it $EXEC_POD_NAME bash "
+            echo "please remember set: export ETCDCTL_API=3"
             kubectl exec -it $EXEC_POD_NAME bash
-            #export ETCDCTL_API=3
-
-        else
-            echo "kubectl exec -it $EXEC_POD_NAME bash"
-            kubectl exec -it $EXEC_POD_NAME bash
-        fi
+      elif [[ $EXEC_POD_NAME =~ "cassandra" ]]
+         then
+             echo "kubectl exec -it $EXEC_POD_NAME cqlsh"
+             kubectl exec -it $EXEC_POD_NAME cqlsh
+      else
+            echo "kubectl exec -it $EXEC_POD_NAME sh"
+            kubectl exec -it $EXEC_POD_NAME sh
+      fi
   fi
 
   rc=$(($rc+$?))
