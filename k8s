@@ -24,9 +24,7 @@ cmdline() {
     done
  eval set -- $args
 
- #echo $args
-
-while getopts "d:l:s:e:h:g" OPTION
+ while getopts "d:l:s:e:h:g" OPTION
     do
          case $OPTION in
          d)
@@ -99,6 +97,7 @@ main() {
   #echo "LOG_POD="$LOG_POD
   #echo "DESCRIBE_POD="$DESCRIBE_POD
   #echo "EXEC_POD="$EXEC_POD
+
   # get pods
   if [ -n "$OPERATION" ]
     then
@@ -166,6 +165,11 @@ main() {
       EXEC_POD_NAME=$(echo $EXEC_GREP_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
       echo $EXEC_POD_NAME
       if [[ $EXEC_POD_NAME =~ "vswitch" ]]
+         then
+            echo "kubectl exec -it $EXEC_POD_NAME bash"
+            kubectl exec -it $EXEC_POD_NAME bash
+            #vppctl -s localhost:5002
+      elif [[ $EXEC_POD_NAME =~ "dp-macl3" ]]
          then
             echo "kubectl exec -it $EXEC_POD_NAME bash"
             kubectl exec -it $EXEC_POD_NAME bash
