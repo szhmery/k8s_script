@@ -1,5 +1,5 @@
 # Purpose: use this script to kubectl delete/get/log/describe pods more easily
-# Author: zhaohsun@cisco.com
+# Author: szhmery@gmail.com
 
 #!/bin/bash
 
