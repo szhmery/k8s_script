@@ -15,6 +15,7 @@ cmdline() {
         case "$arg" in
             --delete)               args="${args}-d ";;
             --log)                  args="${args}-l ";;
+            --tail)                 args="${args}-t ";;
             --get)                  args="${args}-g ";;
             --describe)             args="${args}-s ";;
             --exec)                 args="${args}-e ";;
@@ -24,7 +25,7 @@ cmdline() {
     done
  eval set -- $args
 
- while getopts "d:l:s:e:h:g" OPTION
+ while getopts "d:l:t:s:e:h:g" OPTION
     do
          case $OPTION in
          d)
@@ -33,10 +34,13 @@ cmdline() {
          l)
              readonly LOG_POD=$OPTARG
              ;;
+         t)
+             readonly TAIL_POD=$OPTARG
+             ;;
          s)
              readonly DESCRIBE_POD=$OPTARG
              ;;
-        e)
+         e)
              readonly EXEC_POD=$OPTARG
              ;;
          h)
@@ -72,6 +76,7 @@ usage() {
   OPTIONS:
      -d --delete                 delete the pod, -d all, means delete all ccmts and vswitch pods
      -l --log                    show the pod log
+     -t --tail                   show the pod log with --tail=100 -f
      -g --get                    get all pods
      -s --describe               describe the pod
      -e --exec                   login the pod
@@ -82,6 +87,7 @@ usage() {
      ./$PROGNAME -d vswitch -d ptp -d dhcp
      ./$PROGNAME -d all
      ./$PROGNAME -l ptp
+     ./$PROGNAME -t tail
      ./$PROGNAME -s macl3vpp
      ./$PROGNAME -e vswitch
      ./$PROGNAME -e etct-0
@@ -143,10 +149,19 @@ main() {
       echo $LOG_GREP_OUTPUT
       LOG_POD_NAME=$(echo $LOG_GREP_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
       echo $LOG_POD_NAME
-      kubectl log -f  $LOG_POD_NAME
+      kubectl logs -f  $LOG_POD_NAME
       #echo $LOG_OUTPUT
   fi
-
+  # log --tail
+  if [ -n "$TAIL_POD" ]
+      then
+      LOG_GREP_OUTPUT=$(kubectl get pods | grep $TAIL_POD )
+      echo $LOG_GREP_OUTPUT
+      TAIL_POD_NAME=$(echo $LOG_GREP_OUTPUT | sed 's/\(.*\) [0|1]\/[0|1].*/\1/g')
+      echo $TAIL_POD_NAME
+      kubectl logs $TAIL_POD_NAME --tail=100
+      #echo $LOG_OUTPUT
+  fi
   # describe
   if [ -n "$DESCRIBE_POD" ]
       then
@@ -166,12 +181,12 @@ main() {
       echo $EXEC_POD_NAME
       if [[ $EXEC_POD_NAME =~ "vswitch" ]]
          then
-            echo "kubectl exec -it $EXEC_POD_NAME bash"
+            echo "kubectl exec -it $EXEC_POD_NAME vppctl"
             kubectl exec -it $EXEC_POD_NAME bash
             #vppctl -s localhost:5002
       elif [[ $EXEC_POD_NAME =~ "dp-macl3" ]]
          then
-            echo "kubectl exec -it $EXEC_POD_NAME bash"
+            echo "kubectl exec -it $EXEC_POD_NAME vppctl"
             kubectl exec -it $EXEC_POD_NAME bash
             #vppctl -s localhost:5002
       elif [[ $EXEC_POD_NAME =~ "etcd-0" ]]
