@@ -182,12 +182,12 @@ main() {
       if [[ $EXEC_POD_NAME =~ "vswitch" ]]
          then
             echo "kubectl exec -it $EXEC_POD_NAME vppctl"
-            kubectl exec -it $EXEC_POD_NAME bash
+            kubectl exec -it $EXEC_POD_NAME vppctl
             #vppctl -s localhost:5002
       elif [[ $EXEC_POD_NAME =~ "dp-macl3" ]]
          then
             echo "kubectl exec -it $EXEC_POD_NAME vppctl"
-            kubectl exec -it $EXEC_POD_NAME bash
+            kubectl exec -it $EXEC_POD_NAME vppctl
             #vppctl -s localhost:5002
       elif [[ $EXEC_POD_NAME =~ "etcd-0" ]]
          then
