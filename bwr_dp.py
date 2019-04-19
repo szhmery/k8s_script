@@ -11,6 +11,12 @@ CISCOCM = '4458.2945.45c4'
 INTELCM = "0050.f112.decc"
 
 def main():
+    if len(sys.argv) < 3:
+        print "The parameters are not right. \n" \
+              "Please add parameters, such as:\n" \
+              "python bwr_dp.py enable cisco\n" \
+              "python bwr_dp.py disable intel\n"
+        exit(0)
     for i in range(1, len(sys.argv)):
         print sys.argv[i]
     global count
@@ -51,9 +57,13 @@ def main():
     child = pexpect.spawn(cmd)
     # print child.before
     child.expect('vpp-dp#')
-    debug_main = 'usmac log set enable main'
-    enable_cli = 'usmac test set bwr enable sfid ' + str(sfid) + ' sid ' + str(sid)
+    debug_main = 'usmac log set disable main'
+    debug_disp = 'usmac log set disable disp'
+    enable_cli = 'usmac test set bwr '+ switch + ' sfid ' + str(sfid) + ' sid ' + str(sid)
     child.sendline(debug_main)
+    print child.before
+    child.expect('vpp-dp#')
+    child.sendline(debug_disp)
     print child.before
     # time.sleep(1)
     child.expect('vpp-dp#')

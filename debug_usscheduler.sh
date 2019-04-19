@@ -84,20 +84,24 @@ main() {
         echo "open debug bwr"
         curl -X PUT -d 'ON'   --noproxy  $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/rtt
         echo "open debug rtt"
-        curl -X PUT -d 'ON'   --noproxy  $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/grant
-        echo "open debug grant"
+        curl -X PUT -d 'OFF'   --noproxy  $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/grant
+        echo "disable debug grant"
         curl -X PUT -d 'ON'   --noproxy  $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/api
         echo "open debug api"
+        #curl -X PUT -d 'ON'   --noproxy  $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/lld
+        #echo "enable debug lld"
+        curl -X PUT -d 'ON'   --noproxy  $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/error
+        echo "open debug error"
         curl -X PUT -d 'DEBUG' --noproxy $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/level
         echo "debug level: DEBUG"
         curl -X PUT -d 'ERROR' --noproxy $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/sublevel/TELEMETRY
         echo "TELEMETRY debug level: ERROR"
-        curl -X PUT -d 'ERROR' --noproxy $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/sublevel/UMP
-        echo "UMP debug level: ERROR"
+        curl -X PUT -d 'DEBUG' --noproxy $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/sublevel/UMP
+        echo "UMP debug level: DEBUG"
         curl -X PUT -d 'ERROR' --noproxy $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/sublevel/MAPBD
         echo "MAPBD debug level: ERROR"
-        curl -X PUT -d 'DEBUG' --noproxy $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/sublevel/KAFKA
-        echo "KAFKA debug level: DEBUG"
+        curl -X PUT -d 'ERROR' --noproxy $USSCHEDULER_IP $USSCHEDULER_IP:8080/debug/sublevel/KAFKA
+        echo "KAFKA debug level: ERROR"
 
         echo "Open usscheduler debug finished!"
 
